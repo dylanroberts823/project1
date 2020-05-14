@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+    Let's get started
+{% endblock %}
+
+{% block body %}
+    <p>
+        Welcome to Novel Novels! To get started, sign in or register below.
+    </p>
+
+    <a href="{{ url_for('sign_in') }}">Sign In</a>
+    <a href="{{ url_for('register') }}">Register...</a>
+
+{% endblock %}
