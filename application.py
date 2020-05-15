@@ -54,3 +54,7 @@ def confirmation():
 @app.route("/home")
 def home():
     return render_template("home.html")
+
+@app.route("/user_reviews")
+def user_reviews():
+    return render_template("user_reviews.html")
