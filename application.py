@@ -48,5 +48,5 @@ def hello():
     return render_template("hello.html", name=name)
 
 @app.route("/confirmation")
-def register():
-    return render_template("register.html")
+def confirmation():
+    return render_template("confirmation.html")
