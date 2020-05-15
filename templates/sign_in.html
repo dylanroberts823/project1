@@ -5,10 +5,11 @@
 {% endblock %}
 
 {% block body %}
-    <form action="{{ url_for('hello') }}" method="post">
-        <input type="text" name="name" placeholder="Enter Your Name">
-        <button>Submit</button>
-    </form>
+<form action="{{ url_for('confirmation') }}" method="post">
+    <input type="text" name="name" placeholder="Username">
+    <input type="text" name="password" placeholder="Password">
+    <button>Submit</button>
+</form>
     <a href="{{ url_for('index') }}">Back to Index</a>
 
 
