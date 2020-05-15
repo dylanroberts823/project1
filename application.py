@@ -50,3 +50,7 @@ def hello():
 @app.route("/confirmation")
 def confirmation():
     return render_template("confirmation.html")
+
+@app.route("/home")
+def home():
+    return render_template("home.html")
