@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+Oops!
+{% endblock %}
+
+{% block body %}
+<p class="lead">{{error}}</p>
+
+<blockquote class="blockquote">
+  <p class="mb-0">{{tease}}</p>
+  <footer class="blockquote-footer">Annoying voice</footer>
+</blockquote>
+
+{% endblock %}
