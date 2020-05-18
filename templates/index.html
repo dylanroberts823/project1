@@ -7,12 +7,13 @@
 {% block body %}
     <p>
         Welcome to Novel Novels! To get started, register below.
-        <form action="{{ url_for('hello') }}" method="post">
-            <input type="text" name="name" placeholder="Username">
+        <form action="{{ url_for('index') }}" method="post">
+            <input type="text" name="username" placeholder="Username">
             <input type="text" name="password" placeholder="Password">
+            <input type="text" name="conf_password" placeholder="Confirm Password">
             <button>Submit</button>
         </form>
     </p>
-    <a href="{{ url_for('sign_in') }}">Sign In</a>
+    <a href="{{ url_for('sign_in') }}">Already have an account? Sign In</a>
 
 {% endblock %}
