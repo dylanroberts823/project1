@@ -5,8 +5,8 @@
 {% endblock %}
 
 {% block body %}
-<form action="{{ url_for('confirmation') }}" method="post">
-    <input type="text" name="name" placeholder="Username">
+<form action="{{ url_for('sign_in') }}" method="post">
+    <input type="text" name="username" placeholder="Username">
     <input type="text" name="password" placeholder="Password">
     <button>Submit</button>
 </form>

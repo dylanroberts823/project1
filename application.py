@@ -57,9 +57,7 @@ def index():
             return render_template("sorry.html", tease = "C'mon, copy paste can do better than that", error = "Password and confirmation password don't match. Please fill them in again.")
 
         ## DEBUG:
-        return render_template("hello.html", username = username, password = password)
-
-
+        #return render_template("hello.html", username = username, password = password)
 
         #Then, check if that user already exists
 
@@ -73,13 +71,35 @@ def index():
 
 
 
-@app.route("/sign_in")
+@app.route("/sign_in", methods=["GET", "POST"])
 def sign_in():
-    return render_template("sign_in.html")
 
-@app.route("/register")
-def register():
-    return render_template("register.html")
+    #First, if someone is trying to register
+    if request.method == "POST":
+
+        #Check if all the fields are filled in
+        if not request.form.get("username"):
+            return render_template("sorry.html", tease = "What's in a name? Your user.", error = "Please go back and fill in your username.")
+
+        elif not request.form.get("password"):
+            return render_template("sorry.html", tease = "*Knocks on door* What's the secret password? I don't know, you need to fill that in.", error = "Please go back and fill in your password.")
+
+        #Save their data into variables
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        ## DEBUG:
+        #return render_template("hello.html", username = username, password = password)
+
+        #Then, check if that user already exists
+
+        #Then, hash and save their password
+
+        #Now that they're registered, display the congratulations page before moving on
+
+    #If they just brought up the page, then don't do anything, just wait
+    else:
+        return render_template("sign_in.html")
 
 #@app.route("/hello", methods=["POST"])
 #def hello():
