@@ -74,7 +74,7 @@ def index():
 @app.route("/sign_in", methods=["GET", "POST"])
 def sign_in():
 
-    #First, if someone is trying to register
+    #First, if someone is trying to sign in
     if request.method == "POST":
 
         #Check if all the fields are filled in
@@ -106,17 +106,27 @@ def sign_in():
 #    name = request.form.get("name")
 #    return render_template("hello.html", name=name)
 
-#@app.route("/sorry", methods = ["GET"])
-#def sorry():
-#    return render_template("sorry.html")
 
 @app.route("/confirmation")
 def confirmation():
     return render_template("confirmation.html")
 
-@app.route("/home")
+#will need to remove get
+@app.route("/home", methods=["GET", "POST"])
 def home():
-    return render_template("home.html")
+    #First, if someone is trying to search
+    if request.method == "POST":
+        #Save their data into variables
+        input = request.form.get("search_input")
+        param = request.form.get("search_param")
+
+        if not request.form.get("search_input"):
+            #return all the variables according to what they are
+        else
+            #return all results of search according to params
+
+    else:
+        return render_template("home.html")
 
 @app.route("/user_reviews")
 def user_reviews():
