@@ -57,7 +57,7 @@ def index():
             return render_template("sorry.html", tease = "C'mon, copy paste can do better than that", error = "Password and confirmation password don't match. Please fill them in again.")
 
         ## DEBUG:
-        #print(f"Added {username} by {password} from year {conf_password}")
+        return render_template("hello.html", username = username, password = password)
 
 
 
