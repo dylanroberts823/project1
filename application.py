@@ -1,9 +1,10 @@
 import os
 import requests
-from flask import Flask, session, render_template, request
+from flask import Flask, session, render_template, request, redirect, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from helpers import generate_passkey, check_password
 
 app = Flask(__name__)
 
@@ -24,27 +25,29 @@ Session(app)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-#test the key
-print(res.json())
-
 #DATABASE_URL: postgres://nlxqqpgfkqhxib:7d97bfa8bbfe8a46ac6dc258d70ae1abaf0b991922b8e05751179a1a80961169@ec2-52-202-22-140.compute-1.amazonaws.com:5432/d1r47q8b8p5c3q
 #GoodReads API: oq9wEzUiZfG9ezeNGThi9g
 
-@app.route("/", methods=["GET", "POST"])
-def index():
+#Set a user variable to access
+user = ""
 
+@app.route("/", methods=["GET"])
+def index():
+    return redirect(url_for('register'))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
     #First, if someone is trying to register
     if request.method == "POST":
-
         #Check if all the fields are filled in
         if not request.form.get("username"):
-            return render_template("sorry.html", tease = "What's in a name? Your user.", error = "Please fill in your username.")
+            return render_template("register.html", error = "Please fill in your username.")
 
         if not request.form.get("password"):
-            return render_template("sorry.html", tease = "*Knocks on door* What's the secret password? I don't know, you need to fill that in.", error = "Please fill in your password.")
+            return render_template("register.html", error = "Please fill in your password.")
 
         if not request.form.get("conf_password"):
-            return render_template("sorry.html", tease="Don't be lazy upsie-dazy. Write it twice, it'll be real nice.", error = "Please fill in your confirmation password.")
+            return render_template("register.html", error = "Please fill in your confirmation password.")
 
         #Save their data into variables
         username = request.form.get("username")
@@ -54,20 +57,25 @@ def index():
 
         #Check that their passwords match
         if not password == conf_password:
-            return render_template("sorry.html", tease = "C'mon, copy paste can do better than that", error = "Password and confirmation password don't match. Please fill them in again.")
-
-        ## DEBUG:
-        #return render_template("hello.html", username = username, password = password)
+            return render_template("register.html", error = "Password and confirmation password don't match. Please fill them in again.")
 
         #Then, check if that user already exists
+        if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 0:
+            #Since they don't exist, hash and store their user
+            passkey = generate_passkey(password)
+            db.execute("INSERT INTO users (username, passkey) VALUES (:username, :passkey)", {"username": username, "passkey":passkey})
+            db.commit()
 
-        #Then, hash and save their password
+            #Now that they're registered, go to home page
+            return redirect(url_for('home'))
 
-        #Now that they're registered, display the congratulations page before moving on
+        #Since the user does exist, return invalid credentials
+        else:
+            return render_template("sign_in.html", error = "Sorry, that user already exists. Please try again.")
 
     #If they just brought up the page, then don't do anything, just wait
     else:
-        return render_template("index.html")
+        return render_template("register.html")
 
 
 
@@ -79,54 +87,46 @@ def sign_in():
 
         #Check if all the fields are filled in
         if not request.form.get("username"):
-            return render_template("sorry.html", tease = "What's in a name? Your user.", error = "Please go back and fill in your username.")
+            return render_template("sign_in.html", error = "Please fill in your username.")
 
         elif not request.form.get("password"):
-            return render_template("sorry.html", tease = "*Knocks on door* What's the secret password? I don't know, you need to fill that in.", error = "Please go back and fill in your password.")
+            return render_template("sign_in.html", error = "Please fill in your password.")
 
         #Save their data into variables
         username = request.form.get("username")
         password = request.form.get("password")
 
-        ## DEBUG:
-        #return render_template("hello.html", username = username, password = password)
-
         #Then, check if that user already exists
+        if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 0:
+            return render_template("sign_in.html", error = "Invalid credentials. Please try again.")
 
-        #Then, hash and save their password
+        #Since they do exist, check their password
+        passkey = db.execute("SELECT passkey FROM users WHERE username = :username", {"username": username}).fetchone()
 
-        #Now that they're registered, display the congratulations page before moving on
+        if check_password(password, passkey.passkey):
+            return redirect(url_for('home'))
+
+        #Since that's not the case, return invalid credentials
+        return render_template("sign_in.html", error = "Invalid credentials. Please try again.")
 
     #If they just brought up the page, then don't do anything, just wait
     else:
         return render_template("sign_in.html")
 
-#@app.route("/hello", methods=["POST"])
-#def hello():
-#    name = request.form.get("name")
-#    return render_template("hello.html", name=name)
-
-
-@app.route("/confirmation")
-def confirmation():
-    return render_template("confirmation.html")
-
 #will need to remove get
-@app.route("/home", methods=["GET", "POST"])
+@app.route("/home", methods=["GET"])
 def home():
-    #First, if someone is trying to search
-    if request.method == "POST":
-        #Save their data into variables
-        input = request.form.get("search_input")
-        param = request.form.get("search_param")
+    #If someone is trying to access the page, let them
+    return render_template("home.html")
 
-        if not request.form.get("search_input"):
-            #return all the variables according to what they are
-        else
-            #return all results of search according to params
+@app.route("/search", methods=["POST"])
+def search():
+    #Since someone is trying to search, retrieve the form values
+    search_input = "%"+request.form.get("search_input")+"%"
+    books = db.execute("SELECT * FROM books WHERE isbn LIKE :search_input OR title LIKE :search_input OR author LIKE :search_input OR year LIKE :search_input", {"search_input": search_input}).fetchall()
+    return render_template("search.html", books = books)
 
-    else:
-        return render_template("home.html")
+#@app.route("/books/<int: book_id>")
 
 @app.route("/user_reviews")
 def user_reviews():
