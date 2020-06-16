@@ -4,7 +4,7 @@ from flask import Flask, session, render_template, request, redirect, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from helpers import generate_passkey, check_password
+from helpers import generate_passkey, check_password, get_api_info
 
 app = Flask(__name__)
 
@@ -129,12 +129,15 @@ def search():
 @app.route("/books/<int:book_id>")
 def book(book_id):
     #Make sur book exists
-    book = db.execute("SELECT FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     if book is None:
         return render_template("books.html", error = "Sorry, that book doesn't match our records. Please try another.")
 
     #Get the book information
-    return render_template("books.html")
+    res = get_api_info(book.isbn)
+
+    #Get the rest of the book information
+    return render_template("books.html", res = res, book = book)
 
 
 @app.route("/user_reviews")

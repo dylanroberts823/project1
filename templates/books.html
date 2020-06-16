@@ -4,7 +4,20 @@
     Book Page
 {% endblock %}
 {% block body %}
-  {{error}}
+  <div class = "card">
+    <div class = "card-body">
+      <h5 class = "card-title">{{book.title}}</h5>
+      <h6 class = "card-subtitle">By {{book.author}} </h6>
+      <p class = "card-text">Published in {{book.year}}, ISBN: {{book.isbn}}</p>
+      {% if res.work_ratings_count != 0 %}
+        <p class = "card-text">Average rating: {{res.average_rating}}</p>
+        <p class = "card-text">Number of ratings: {{res.work_ratings_count}}</p>
+      {% endif %}
+    </div>
+  </div>
+  <h3> Reviews </h3>
+
+
 <div>
   <a href = "url_for('home')">Home</a>
 </div>
