@@ -126,7 +126,16 @@ def search():
     books = db.execute("SELECT * FROM books WHERE isbn LIKE :search_input OR title LIKE :search_input OR author LIKE :search_input OR year LIKE :search_input", {"search_input": search_input}).fetchall()
     return render_template("search.html", books = books)
 
-#@app.route("/books/<int: book_id>")
+@app.route("/books/<int:book_id>")
+def book(book_id):
+    #Make sur book exists
+    book = db.execute("SELECT FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    if book is None:
+        return render_template("books.html", error = "Sorry, that book doesn't match our records. Please try another.")
+
+    #Get the book information
+    return render_template("books.html")
+
 
 @app.route("/user_reviews")
 def user_reviews():
