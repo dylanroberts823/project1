@@ -1,17 +1,16 @@
 import hashlib, binascii, os, requests
 
+master_word = 'adfjkdsajf'
+#Note: I attempted using and storing hash and salts, but mySQL did not allow me to store the byte database
+#I couldn't even create varbinary columns :(
 def generate_passkey(password):
-    salt = os.urandom(32)
-    key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
-    passkey = salt + key
+    passkey = password+master_word
     return passkey
 
 def check_password(password_to_check, passkey):
     # Use the exact same setup you used to generate the key, but this time put in the password to check
-    salt = passkey[:32]
-    key = passkey[32:]
-    new_key = hashlib.pbkdf2_hmac('sha256', password_to_check.encode('utf-8'), b'salt', 100000)
-    return new_key==key
+    new_key = password_to_check+master_word
+    return new_key==passkey
 
 def get_api_info(book_isbn):
     #Use the key to get the book data from the API

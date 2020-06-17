@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, session, render_template, request, redirect, url_for
+from flask import Flask, session, render_template, request, redirect, url_for, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -28,12 +28,14 @@ db = scoped_session(sessionmaker(bind=engine))
 #DATABASE_URL: postgres://nlxqqpgfkqhxib:7d97bfa8bbfe8a46ac6dc258d70ae1abaf0b991922b8e05751179a1a80961169@ec2-52-202-22-140.compute-1.amazonaws.com:5432/d1r47q8b8p5c3q
 #GoodReads API: oq9wEzUiZfG9ezeNGThi9g
 
-#Set a user variable to access
-user = ""
-
 @app.route("/", methods=["GET"])
 def index():
-    return redirect(url_for('register'))
+    #If the user isn't signed in, prompt them
+    if session.get("USERNAME") is None:
+        return redirect(url_for('sign_in'))
+    #Else, move them to the home page
+    else:
+        return redirect(url_for('home'))
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -66,7 +68,8 @@ def register():
             db.execute("INSERT INTO users (username, passkey) VALUES (:username, :passkey)", {"username": username, "passkey":passkey})
             db.commit()
 
-            #Now that they're registered, go to home page
+            #Now that they're registered, store their sessiona and go to home page
+            session["USERNAME"] = username
             return redirect(url_for('home'))
 
         #Since the user does exist, return invalid credentials
@@ -103,7 +106,9 @@ def sign_in():
         #Since they do exist, check their password
         passkey = db.execute("SELECT passkey FROM users WHERE username = :username", {"username": username}).fetchone()
 
+        #Since the password is right, store session and redirect them to home
         if check_password(password, passkey.passkey):
+            session["USERNAME"] = username
             return redirect(url_for('home'))
 
         #Since that's not the case, return invalid credentials
@@ -113,9 +118,19 @@ def sign_in():
     else:
         return render_template("sign_in.html")
 
+@app.route("/logout", methods=["GET"])
+def logout():
+    session.pop("USERNAME", None)
+    #If someone is trying to access the page, let them
+    return redirect(url_for('sign_in'))
+
 #will need to remove get
 @app.route("/home", methods=["GET"])
 def home():
+    #Make sure user is signed in
+    if session.get("USERNAME") is None:
+        return redirect(url_for('sign_in'))
+    print("Username: ", session.get("USERNAME"))
     #If someone is trying to access the page, let them
     return render_template("home.html")
 
@@ -128,6 +143,10 @@ def search():
 
 @app.route("/books/<int:book_id>")
 def book(book_id):
+    #Make sure user is signed in
+    if session.get("USERNAME") is None:
+        return redirect(url_for('sign_in'))
+
     #Make sur book exists
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     if book is None:
@@ -136,10 +155,59 @@ def book(book_id):
     #Get the book information
     res = get_api_info(book.isbn)
 
+    #Get the reviews
+    reviews = db.execute("SELECT * FROM reviews WHERE book_id = :id", {"id": book.id}).fetchall()
+
     #Get the rest of the book information
-    return render_template("books.html", res = res, book = book)
+    return render_template("books.html", res = res, book = book, reviews = reviews)
+
+#add filter for user id
+@app.route("/books/write_review/<int:book_id>", methods=["GET", "POST"])
+def write_review(book_id):
+    #Make sure user is signed in
+    if session.get("USERNAME") is None:
+        return redirect(url_for('sign_in'))
+    #If we're pulling up the review page, let the form be generated
+    if request.method == "GET":
+        #Make sure user didn't already write a review
+        user = session.get("USERNAME")
+        #If they didn't write a review, generate this template
+        if db.execute("SELECT * FROM reviews WHERE author = :user AND book_id = :book_id", {"user": user, "book_id": book_id}).rowcount == 0:
+            ratings = [1,2,3,4,5]
+            return render_template("write_review.html", ratings=ratings)
+        else:
+            return render_template("sorry.html", error = "You already reviewed that book.")
+    #Else, we're trying to submit
+    if request.method == "POST":
+        username = session.get("USERNAME")
+        user_id = db.execute("SELECT id FROM users WHERE username = username", {"username": username}).fetchone()
+        user_id = user_id.id
+        author = session.get("USERNAME")
+        title = request.form.get("title")
+        rating = request.form.get("rating")
+        text = request.form.get("text")
+        db.execute("INSERT INTO reviews (user_id, author, title, rating, text, book_id) VALUES (:user_id, :author,:title, :rating, :text, :book_id)",
+            {"user_id": user_id, "author": author, "title": title, "rating": rating, "text": text, "book_id": book_id})
+        db.commit()
+        return redirect(url_for('book', book_id = book_id))
 
 
-@app.route("/user_reviews")
-def user_reviews():
-    return render_template("user_reviews.html")
+@app.route("/api/<string:isbn>")
+def book_api(isbn):
+    #Return details about a single books
+    #Make sure book exists
+    if db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).rowcount == 0:
+        return render_template("sorry.html", error = "That ISBN doesn't match out database.")
+
+    #Since the book exists, retrieve it and then send its data
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": isbn}).fetchone()
+    res = get_api_info(book.isbn)
+    print(res)
+    return jsonify({
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "isbn": book.isbn,
+        "review_count": res["work_reviews_count"],
+        "average_rating": res["average_rating"],
+    })

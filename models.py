@@ -18,11 +18,6 @@ class Book(db.Model):
     year = db.Column(db.Integer, nullable=False)
     reviews = db.relationship("Review", backref="review", lazy=True)
 
-    #def add_review(self):
-    #    r = Review(self.id, #get user, #get title, #get body, #get rating, )
-    #    db.session.add(r)
-    #    db.session.commit()
-
 class Review(db.Model):
     __tablename__ = "reviews"
     id = db.Column(db.Integer, primary_key=True)
@@ -31,5 +26,4 @@ class Review(db.Model):
     title = db.Column(db.String, nullable=False)
     body = db.Column(db.String, nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-
-    #will have to limit rating to 1-5
+    author = db.Column(db.STRINg, nullable=False)

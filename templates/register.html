@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+
+{% block heading %}
+    Let's get started
+{% endblock %}
+
+{% block body %}
+    <p>
+      Welcome to Novel Novels! To get started, register below.
+      <form action="{{ url_for('register') }}" method="post">
+          <input type="text" name="username" placeholder="Username">
+          <input type="password" name="password" placeholder="Password">
+          <input type="password" name="conf_password" placeholder="Confirm Password">
+          <button>Submit</button>
+      </form>
+    </p>
+    {{error}}
+    <a href="{{ url_for('sign_in') }}">Already have an account? Sign In</a>
+
+{% endblock %}

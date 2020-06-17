@@ -13,12 +13,20 @@
         <p class = "card-text">Average rating: {{res.average_rating}}</p>
         <p class = "card-text">Number of ratings: {{res.work_ratings_count}}</p>
       {% endif %}
+      <a class = "card-link" href = "write_review/{{book.id}}">Review this book</a>
     </div>
   </div>
-  <h3> Reviews </h3>
-
-
-<div>
-  <a href = "url_for('home')">Home</a>
-</div>
+  <div>
+    <h3> Reviews </h3>
+    {% for review in reviews %}
+    <div class = "card">
+      <div class = "card-body">
+        <h5 class = "card-title">{{review.title}}</h5>
+        <h6 class = "card-subtitle">By {{review.author}} </h6>
+        <p class = "card-text">Rating: {{review.rating}}</p>
+        <p class = "card-text">{{review.text}}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 {% endblock %}

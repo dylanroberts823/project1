@@ -1,10 +1,11 @@
-{% extends "layout.html" %}
+{% extends "landing.html" %}
 
 {% block heading %}
     Home
 {% endblock %}
 
 {% block body %}
+  <a href="{{url_for('logout')}}">Logout</a>
   <form action="{{ url_for('search') }}" method="post">
       <input type="text" name="search_input" placeholder="Search">
       <button>Submit</button>
