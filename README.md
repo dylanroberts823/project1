@@ -2,8 +2,15 @@
 
 Web Programming with Python and JavaScript
 
-This project may not have been possible without extensively reading, learning and using the code spplied by Faaab's (assume he) submission of CS-50w-project1, available here: https://github.com/Faaab/cs50w-project1/blob/master/application.py
+No packages other than those provided by requirements.txt were installed
 
-Most of the work here is pulled from code Faaab wrote, not in an attempt to take credit for his work, but to learn from what he wrote. For every function he used and I didn't know, I looked it up and learned so much more. If I didn't understand a function, I didn't use it. If you asked me to, I could rewrite something similar to what I produced below on my own. This is what I've learned open-source coding is all about - learning from each others' work, then building upon it to grow and better it as a community.
+applications.py contains the paths to log in, log out, register, access the api, home page (which contains the search query), search page (to display search results), books page (to display information about a given book), and review submission page (to submit a review).
 
-To be specific about what is mine and what is his: I wrote everything in templates. He inspired the way to hash passwords, and clarified how to use "with" for the import statement.
+applications.py also contains all of the search query and submission functionality
+
+helpers.py has functions to generate new passwords to be stored in database (to overcome SQL injection), checking passwords function and a function to get information from the api
+
+import.py has the functions used to construct the tables within the database, as well as upload the documents 
+
+programming for the layout of the signin and signout pages are inside layout.html
+programming for the layout of all other pages are inside landing.html
